@@ -219,7 +219,11 @@ class ReMixer:
 		clip_time = 0
 
 		while clip_time < duration:
-			clip_time += self.make_one_split(filesofvideos)
+			print(clip_time)
+			print(" ____TIME____ ")
+			print(duration)
+			print(" ____DURATION____ ")
+			clip_time += self.make_one_split(filesofvideos)			
 
 	# choosing random algorithm
 	def local_random(self, arr):
@@ -301,7 +305,7 @@ class ReMixer:
 								vid = ffmpeg.input(file)
 								vid = vid.trim(start = time[0][0], end = time[0][1]).setpts('PTS-STARTPTS')
 								output = ffmpeg.output(vid, filename)
-								output.run()
+								output.run(quiet=True)
 								print("ffmpeg done")
 
 								
@@ -339,13 +343,13 @@ class ReMixer:
 				audio_input = ffmpeg.input(file)
 				audio_cut = audio_input.audio.filter('atrim', duration=clip.duration)
 				audio_output = ffmpeg.output(audio_cut, tempfile)
-				ffmpeg.run(audio_output)
+				ffmpeg.run(audio_output, quiet=True)
 				print("audio trimmed")
 
 				video = ffmpeg.input(finalfile)
 				audio = ffmpeg.input(tempfile)
 				audiobasename = Usefull.remove_spaces(os.path.basename(file))
-				ffmpeg.concat(video, audio, v=1, a=1).output('./splits/final_' + datetime.now().strftime("%d.%m.%Y_%H:%M:%S") + audiobasename + '.mp4').run()
+				ffmpeg.concat(video, audio, v=1, a=1).output('./splits/final_' + datetime.now().strftime("%d.%m.%Y_%H:%M:%S") + audiobasename + '.mp4').run(quiet=True)
 				print("audio added")
 			except:
 				print("ERROR AUDIO")
