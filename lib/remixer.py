@@ -179,12 +179,10 @@ class ReMixer:
 	# gets time
 	def get_time(self, seconds, dur = 1):
 		result = []		
-		print(seconds)
+		# print(seconds)
 		
 		begin = self.local_random_range(0, seconds)
-		
-		print(begin)
-		print("begin")
+	
 		
 		result.append([begin, begin + dur])
 
@@ -219,11 +217,11 @@ class ReMixer:
 		clip_time = 0
 
 		while clip_time < duration:
-			print(clip_time)
-			print(" ____TIME____ ")
+			clip_time += self.make_one_split(filesofvideos)	
+			print("one split done:")
+			print(clip_time)		
 			print(duration)
-			print(" ____DURATION____ ")
-			clip_time += self.make_one_split(filesofvideos)			
+			print(":get new")
 
 	# choosing random algorithm
 	def local_random(self, arr):
@@ -248,7 +246,6 @@ class ReMixer:
 	def make_one_split(self, videos):
 		while(True):
 			file = self.local_random(videos)
-			print(file)
 			try:
 				with VideoFileClip(file) as clip:
 					size = clip.size
@@ -262,13 +259,13 @@ class ReMixer:
 					cond5 = (w > h) and ("horizontal" in self.flags) and (not "/vert" in file)	
 					cond3 = "both" in self.flags
 
-					if (cond1 or cond5):
-						print("dimensionsHorizontal - video is horizontal")
-					else:
-						if (cond2 or cond4):
-							print("dimensionsVertical - video is vertical")
-						elif(cond3):
-							print("dimensionsBoth - casing both")
+					# if (cond1 or cond5):
+					# 	print("dimensionsHorizontal - video is horizontal")
+					# else:
+					# 	if (cond2 or cond4):
+					# 		print("dimensionsVertical - video is vertical")
+					# 	elif(cond3):
+					# 		print("dimensionsBoth - casing both")
 
 					resolved_dimensions = cond1 or cond2 or cond3 or cond4 or cond5
 
@@ -276,16 +273,16 @@ class ReMixer:
 					pathoforiginal = Path(clip.filename)
 					
 					if "split_names" not in self.opts:
-						print("split_names")
+						# print("split_names")
 						self.opts["split_names"] = []				
-						print("split_names arr setted")
+						# print("split_names arr setted")
 
-					print(self.opts["split_names"])
-					print("hey")
+					# print(self.opts["split_names"])
+					# print("hey")
 
 					if resolved_dimensions and (time is not False):
-						print("dimensionsOk")
-						print(time)
+						# print("dimensionsOk")
+						# print(time)
 
 						randomTitle = str(self.local_random_range(0, 10000))
 						prefilename = "./splits/cuts/" + randomTitle + "-" + Usefull.remove_spaces(pathoforiginal.name)
@@ -294,20 +291,20 @@ class ReMixer:
 							try:
 
 								while prefilename in self.opts["split_names"]:									
-									print("hey")
+									# print("hey")
 									prefilename = prefilename + "d"
 
 								self.opts["split_names"].append(prefilename)
 								filename = prefilename + "-cut.mp4"
 
-								print(filename)
+								# print(filename)
 
 								vid = ffmpeg.input(file)
 								vid = vid.trim(start = time[0][0], end = time[0][1]).setpts('PTS-STARTPTS')
 								output = ffmpeg.output(vid, filename)
 								output.run(quiet=True)
-								print("ffmpeg done")
 
+								print("ffmpeg done")
 								
 								return time[0][1] - time[0][0]
 							except:
