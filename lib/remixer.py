@@ -46,12 +46,17 @@ class ReMixer:
 			if "song" in self.flags: 
 				self.maketree(['cuts', 'prod', 'temp'])
 
-				while True:
-					song = self.get_song(None)
-					print(song)
-					x = input()
-					if x == "y":
-						break
+				# while True:
+				# 	song = self.get_song(None)
+				# 	print(song)
+				# 	x = input()
+				# 	if x == "y":
+				# 		break
+				# uncomment to use
+
+
+				song = self.get_song(None)
+				# comment to use 
 
 				self.split_files_to_clip_length(song["duration"])
 				self.clear_small_files()
