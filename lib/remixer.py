@@ -75,13 +75,6 @@ class ReMixer:
 				self.concatenate(finalfile)
 				self.make_song(finalfile, song["file"])
 
-			if 'all' in self.flags:
-				self.maketree(['cuts', 'prod', 'temp'])
-				self.split_files()
-				self.clear_small_files()
-				self.concatenate(finalfile)
-				self.add_audio(finalfile)
-
 			if 'j' in self.flags:
 				self.maketree(['prod', 'temp'])
 				self.concatenate(finalfile)

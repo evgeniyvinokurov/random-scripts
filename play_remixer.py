@@ -12,7 +12,7 @@ settings = {
 	"folders": videos,
 	"mfolders": music_folders,
 	"seconds": [1, 1.5, 1.7, 2,3, 4.2, 4.6, 5, 2.5, 3.4],
-	"flags": ["horizontal", "all"] # ["song", "8ball"]
+	"flags": ["horizontal", "song", "8ball"]
 }
 
 print(settings)
