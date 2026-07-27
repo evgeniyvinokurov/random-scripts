@@ -6,6 +6,8 @@ import random
 import datetime
 import random
 import re
+from math import ceil
+
 
 import subprocess
 from datetime import datetime
@@ -183,12 +185,8 @@ class ReMixer:
 
 	# gets time
 	def get_time(self, seconds, dur = 1):
-		result = []		
-		# print(seconds)
-		
-		begin = self.local_random_range(0, seconds)
-	
-		
+		result = []
+		begin = self.local_random_range(0, seconds, self.mode)		
 		result.append([begin, begin + dur])
 
 		if (seconds is None):
@@ -244,9 +242,23 @@ class ReMixer:
 		return self.e8.shuffle(arr, self.mode)
 	
 	# choosing random range algorithm
-	def local_random_range(self, minv, maxv):
-		return self.e8.randomFromRange(minv, maxv, self.mode)
+	def local_random_range(self, minv, maxv, mode):
+		result = None
+		rlist = []
 		
+		if minv < maxv: 
+			r = range(minv, ceil(maxv), 1)
+			rlist.extend(r) 
+			rlist.append(maxv) 
+					
+		if mode == "free8ball":
+			result = self.e8.getOneRandomWithEightBall(rlist)
+		elif mode == "salted":
+			result = self.e8.getOneByEightBall(rlist)
+		else:
+			result = random.choice(rlist)
+		
+		return result
 	# makes split from file
 	def make_one_split(self, videos):
 		while(True):
@@ -275,6 +287,7 @@ class ReMixer:
 					resolved_dimensions = cond1 or cond2 or cond3 or cond4 or cond5
 
 					time = self.get_time(clip.duration, self.local_random(self.seconds))
+
 					pathoforiginal = Path(clip.filename)
 					
 					if "split_names" not in self.opts:
@@ -289,7 +302,7 @@ class ReMixer:
 						# print("dimensionsOk")
 						# print(time)
 
-						randomTitle = str(self.local_random_range(0, 10000))
+						randomTitle = str(self.local_random_range(0, 10000, self.mode))
 						prefilename = "./splits/cuts/" + randomTitle + "-" + Usefull.remove_spaces(pathoforiginal.name)
 
 						if "test" not in self.flags:
