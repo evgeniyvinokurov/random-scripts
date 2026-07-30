@@ -60,7 +60,8 @@ class ReMixer:
 				song = self.get_song(None)
 				# comment to use 
 
-				self.split_files_to_clip_length(song["duration"])
+				target_duration = self.get_song_clip_duration(song["duration"])
+				self.split_files_to_clip_length(target_duration)
 				self.clear_small_files()
 				self.concatenate(finalfile)
 				self.make_song(finalfile, song["file"])
@@ -70,7 +71,8 @@ class ReMixer:
 				self.maketree(['cuts', 'prod', 'temp'])
 				song = self.get_song(self.thissong)
 
-				self.split_files_to_clip_length(song["duration"])
+				target_duration = self.get_song_clip_duration(song["duration"])
+				self.split_files_to_clip_length(target_duration)
 				self.clear_small_files()
 				self.concatenate(finalfile)
 				self.make_song(finalfile, song["file"])
@@ -118,6 +120,14 @@ class ReMixer:
 
 		if "song" in self.flags:
 			self.song = True
+
+		self.song_part = 1.0
+		if "song_part" in opts:
+			self.song_part = float(opts["song_part"])
+		elif "half" in self.flags:
+			self.song_part = 0.5
+		elif "quad" in self.flags:
+			self.song_part = 0.25
 		
 		if "salts" in opts:
 			self.e8 = EightBall(opts["salts"])
@@ -363,15 +373,42 @@ class ReMixer:
 				print("ERROR AUDIO")
 				pass
 
+	# song duration for video length (full / half / quad)
+	def get_song_clip_duration(self, duration):
+		part = self.song_part
+		target = duration * part
+		print("song duration: " + str(duration))
+		print("song part: " + str(part))
+		print("clip target duration: " + str(target))
+		return target
+
+	def get_song_part_label(self):
+		if self.song_part == 0.5:
+			return "half_clip"
+		if self.song_part == 0.25:
+			return "quad_clip"
+		if self.song_part == 1.0:
+			return "full_clip"
+		return "part_clip"
+
 	# makes audio to video
 	def make_song(self, finalfile, song) :
 		try:
-			video = ffmpeg.input(finalfile)
-			audio = ffmpeg.input(song)
-			audiobasename = Usefull.remove_spaces(os.path.basename(song))
-			clean_name = "".join(char for char in audiobasename if char.isalnum())
-			ffmpeg.concat(video, audio, v=1, a=1).output('./splits/final_' + datetime.now().strftime("%d.%m.%Y_%H:%M:%S") + clean_name + '_full_clip.mp4').run()			
-			print("clip done")
+			with VideoFileClip(finalfile) as clip:
+				tempfile = "./splits/prod/sound.wav"
+				audio_input = ffmpeg.input(song)
+				audio_cut = audio_input.audio.filter('atrim', duration=clip.duration)
+				audio_output = ffmpeg.output(audio_cut, tempfile)
+				ffmpeg.run(audio_output, quiet=True)
+				print("audio trimmed to clip")
+
+				video = ffmpeg.input(finalfile)
+				audio = ffmpeg.input(tempfile)
+				audiobasename = Usefull.remove_spaces(os.path.basename(song))
+				clean_name = "".join(char for char in audiobasename if char.isalnum())
+				suffix = self.get_song_part_label()
+				ffmpeg.concat(video, audio, v=1, a=1).output('./splits/final_' + datetime.now().strftime("%d.%m.%Y_%H:%M:%S") + clean_name + '_' + suffix + '.mp4').run()
+				print("clip done")
 		except Exception as e:
 			print(f"Type: {type(e).__name__}")
 			print(f"Message: {e}")
