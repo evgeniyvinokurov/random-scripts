@@ -1,4 +1,4 @@
-# random-scripts-video-and-texts v0.8.6  
+# random-scripts-video-and-texts v0.9.8
 Фабрика случайных скриптов на питоне  
   
 autoletter.py - автописьмо  
