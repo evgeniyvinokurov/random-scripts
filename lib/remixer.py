@@ -21,11 +21,13 @@ from .randomio import RandomIO
 
 class ReMixer:
 	def __init__(self, opts):
-		print(opts)
 		self.make_settings(opts)
+
+	def log(self, message):
+		print("[ReMixer] " + message)
 		
 	def run(self):		
-		print(self.flags)
+		self.log("Run started with flags: " + ", ".join(self.flags))
 
 		finalfile = "./splits/prod/final.mp4"
 
@@ -86,10 +88,8 @@ class ReMixer:
 				self.add_audio(finalfile)
 
 
-		except Exception as e:
-			print(f"Type: {type(e).__name__}")
-			print(f"Message: {e}")
-			print("LOGIC ERROR")
+		except Exception:
+			self.log("Run failed")
 			return False
 
 		return True
@@ -204,13 +204,14 @@ class ReMixer:
 		for folder in self.folders:
 			filesofvideos.extend(RandomIO.files(folder, self.get_exts()))
 
-		print(str(len(filesofvideos)) + " videos found")
+		self.log(str(len(filesofvideos)) + " videos found")
 
 		i = 0
 
 		while i < self.countv:
 			self.make_one_split(filesofvideos)
 			i = i + 1
+		self.log("Split generation finished")
 
 	def split_files_to_clip_length(self, duration):
 		filesofvideos = []
@@ -218,16 +219,13 @@ class ReMixer:
 		for folder in self.folders:
 			filesofvideos.extend(RandomIO.files(folder, self.get_exts()))
 
-		print(str(len(filesofvideos)) + " videos found")
+		self.log(str(len(filesofvideos)) + " videos found")
 
 		clip_time = 0
 
 		while clip_time < duration:
 			clip_time += self.make_one_split(filesofvideos)	
-			print("one split done:")
-			print(clip_time)		
-			print(duration)
-			print(":get new")
+			self.log("Clip progress: " + str(round(clip_time, 2)) + " / " + str(round(duration, 2)) + " sec")
 
 	# choosing random algorithm
 	def local_random(self, arr):
@@ -325,19 +323,17 @@ class ReMixer:
 								output = ffmpeg.output(vid, filename)
 								output.run(quiet=True)
 
-								print("ffmpeg done")
+								self.log("Split created: " + os.path.basename(filename))
 								
 								return time[0][1] - time[0][0]
 							except:
-								print("ERROR FFMPEG FILE")
+								self.log("Failed to cut one split with ffmpeg")
 								return 0
 						else:
-							print("test mode")
+							self.log("Test mode: split was not written")
 							return 0
-			except Exception as e:
-				print(f"Type: {type(e).__name__}")
-				print(f"Message: {e}")
-				print("ERROR MOVIEPY FILE")
+			except Exception:
+				self.log("Failed to read a source video with moviepy")
 				return 0
 
 	# gets audio and combines final clip with audio
@@ -348,7 +344,7 @@ class ReMixer:
 			for folder in self.mfolders:
 				filesofmusic.extend(Musicle.music_files(folder))
 
-			print(str(len(filesofmusic)) + " music files found")
+			self.log(str(len(filesofmusic)) + " music files found")
 			
 			try:
 				while True:
@@ -356,30 +352,30 @@ class ReMixer:
 					if Musicle.checkfile_nocopy(file):
 						break
 					
-				print(file)
+				self.log("Selected audio: " + os.path.basename(file))
 				tempfile = "./splits/prod/sound.wav"
 				audio_input = ffmpeg.input(file)
 				audio_cut = audio_input.audio.filter('atrim', duration=clip.duration)
 				audio_output = ffmpeg.output(audio_cut, tempfile)
 				ffmpeg.run(audio_output, quiet=True)
-				print("audio trimmed")
+				self.log("Audio trimmed to match clip length")
 
 				video = ffmpeg.input(finalfile)
 				audio = ffmpeg.input(tempfile)
 				audiobasename = Usefull.remove_spaces(os.path.basename(file))
 				ffmpeg.concat(video, audio, v=1, a=1).output('./splits/final_' + datetime.now().strftime("%d.%m.%Y_%H:%M:%S") + audiobasename + '.mp4').run(quiet=True)
-				print("audio added")
+				self.log("Audio added to final clip")
 			except:
-				print("ERROR AUDIO")
+				self.log("Audio step failed")
 				pass
 
 	# song duration for video length (full / half / quad)
 	def get_song_clip_duration(self, duration):
 		part = self.song_part
 		target = duration * part
-		print("song duration: " + str(duration))
-		print("song part: " + str(part))
-		print("clip target duration: " + str(target))
+		self.log("Song duration: " + str(round(duration, 2)) + " sec")
+		self.log("Song part: " + str(part))
+		self.log("Target clip duration: " + str(round(target, 2)) + " sec")
 		return target
 
 	def get_song_part_label(self):
@@ -400,38 +396,41 @@ class ReMixer:
 				audio_cut = audio_input.audio.filter('atrim', duration=clip.duration)
 				audio_output = ffmpeg.output(audio_cut, tempfile)
 				ffmpeg.run(audio_output, quiet=True)
-				print("audio trimmed to clip")
+				self.log("Audio trimmed to clip")
 
 				video = ffmpeg.input(finalfile)
 				audio = ffmpeg.input(tempfile)
 				audiobasename = Usefull.remove_spaces(os.path.basename(song))
 				clean_name = "".join(char for char in audiobasename if char.isalnum())
 				suffix = self.get_song_part_label()
-				ffmpeg.concat(video, audio, v=1, a=1).output('./splits/final_' + datetime.now().strftime("%d.%m.%Y_%H:%M:%S") + clean_name + '_' + suffix + '.mp4').run()
-				print("clip done")
-		except Exception as e:
-			print(f"Type: {type(e).__name__}")
-			print(f"Message: {e}")
-			print("ERROR AUDIO")
+				ffmpeg.concat(video, audio, v=1, a=1).output('./splits/final_' + datetime.now().strftime("%d.%m.%Y_%H:%M:%S") + clean_name + '_' + suffix + '.mp4').run(quiet=True)
+				self.log("Song clip is ready")
+		except Exception:
+			self.log("Failed to build song clip with audio")
 			pass
 
 	# concatentes splits to clip
 	def concatenate(self, finalfile):
 		try:
+			self.log("Preparing concat segments")
 			st = "ffmpeg -i \"concat:"
 			alltemp_vids = glob.glob("./splits/cuts/*.mp4")
 			file_temp_ts = []
 
 			for f in alltemp_vids:
 				file = "./splits/temp/temp" + str(alltemp_vids.index(f) + 1) + ".ts"
-				print(f)
-				print(file)
-				os.system("ffmpeg -i " + f + " -c copy -bsf:v h264_mp4toannexb -f mpegts " + file)
+				subprocess.run(
+					"ffmpeg -i " + "\"" + f + "\"" + " -c copy -bsf:v h264_mp4toannexb -f mpegts " + "\"" + file + "\"",
+					shell=True,
+					stdout=subprocess.DEVNULL,
+					stderr=subprocess.DEVNULL,
+					check=False
+				)
 				
 				if os.path.exists(file):
 					file_temp_ts.append(file)
 
-			print(file_temp_ts)
+			self.log(str(len(file_temp_ts)) + " temp segments prepared")
 			file_temp_ts = self.local_shuffle(file_temp_ts)
 			for f in file_temp_ts:
 				st += f
@@ -440,12 +439,20 @@ class ReMixer:
 				else:
 					st += "\" -c copy -bsf:a aac_adtstoasc " + finalfile
 
-			print(st)
-			os.system(st)
+			subprocess.run(
+				st,
+				shell=True,
+				stdout=subprocess.DEVNULL,
+				stderr=subprocess.DEVNULL,
+				check=False
+			)
 
-			print("concatenation done")
+			if os.path.exists(finalfile):
+				self.log("Concatenation done")
+			else:
+				self.log("Concatenation finished, but final file is missing")
 		except:
-			print("ERROR CONCATENATE")
+			self.log("Concatenation failed")
 			pass
 	
 		# makes split from file
@@ -458,7 +465,7 @@ class ReMixer:
 			for folder in self.mfolders:
 				filesofmusic.extend(Musicle.music_files(folder))
 
-		print(str(len(filesofmusic)) + " music files found")
+		self.log(str(len(filesofmusic)) + " music files found")
 		
 		try:
 			while True:
@@ -469,16 +476,16 @@ class ReMixer:
 					if Musicle.checkfile_nocopy(file):
 						break
 		except:
-			print("ERROR AUDIO")
+			self.log("Song selection failed")
 			pass
 
 		duration = Musicle.file_length(file)
+		self.log("Selected song: " + os.path.basename(file))
 		
 		return { "duration": duration, "file": file }
 
 	def probe(self, v):
-
-		print("probe default")
+		self.log("Running probe")
 		try:
 			probe_data = ffmpeg.probe(v)
 			for stream in probe_data["streams"]:
@@ -487,27 +494,20 @@ class ReMixer:
 					h = stream["height"]
 					w = stream["width"]
 
-					print("width:" + str(h))
-					print("height:" + str(w))
-					print("\n")
-
 					if w >= h:
 						return "horizontal"
 					else:
 						return "vertical"
 		except:
+			self.log("Probe failed")
 			return ""
 
 	def probe_moviepy(self, v):
-		print("movie py probe")
+		self.log("Running moviepy probe")
 		with VideoFileClip(v) as clip:
 			size = clip.size
 			h = size[1]
 			w = size[0]
-
-			print("width:" + str(h))
-			print("height:" + str(w))
-			print("\n")
 
 			if w >= h:
 				return "horizontal"
@@ -515,8 +515,7 @@ class ReMixer:
 				return "vertical"
 
 	def ffprobe(self, v):
-
-		print("ff probe")
+		self.log("Running ffprobe")
 		command = "ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "
 		command += "'" + v + "'"
 
@@ -529,13 +528,8 @@ class ReMixer:
 
 		# print(parts)
 
-		print("width:" + w)
-		print("height:" + h)
-
 		w = int(parts[1])
 		h = int(parts[0])
-
-		print("\n")
 
 		if w >= h:
 			return "horizontal"

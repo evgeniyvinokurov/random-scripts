@@ -5,8 +5,8 @@ from predefined_vars import video_folders_films
 from predefined_vars import music_folders
 
 videos = []
-# videos.extend(video_folders_zhszh)
-videos.extend(video_folders_films)
+videos.extend(video_folders_zhszh)
+# videos.extend(video_folders_films)
 
 settings = {	
 	"folders": videos,
