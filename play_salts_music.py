@@ -1,10 +1,10 @@
 from lib.randomio import RandomIO
 from lib.eightball import EightBall
 
-image1 = "./samples_img/10.jpg"
+image1 = "/home/evgenii/Desktop/imagesforscan/Screenshot at 2026-07-24 13-34-52.png"
 image2 = "/home/evgenii/Desktop/music folder/"
 
-musicfolder = "/home/evgenii/Desktop/music folder/"
+musicfolder = "/home/evgenii/Desktop/all/music folder"
 
 
 musics = RandomIO.music(musicfolder)

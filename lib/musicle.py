@@ -89,7 +89,7 @@ class Musicle:
     @staticmethod
     def checkfile_nocopy(m):
         try:
-            ffmpeg.input(m).output("null", f="null").run()
+            ffmpeg.input(m).output("null", f="null").run(quiet=True)
             basename = os.path.basename(m)
             print(basename)
             return True
@@ -130,7 +130,7 @@ class Musicle:
 
         with open(musicplaylistfile, mode="w", encoding="utf-8") as f:
             for m in choosen:	
-                ffmpeg.input(m).output("null", f="null").run()
+                ffmpeg.input(m).output("null", f="null").run(quiet=True)
                 f.write(m + "\r\n")               
 
         print(musicplaylistfile)

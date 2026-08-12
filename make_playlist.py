@@ -3,11 +3,11 @@ from lib.randomio import RandomIO
 from lib.musicle import Musicle
 
 
-musicfolder = "/home/evgenii/Desktop/all/before work/music folder/"
+musicfolder = "/home/evgenii/Desktop/all/music folder"
 dirplaylists = "/home/evgenii/Desktop/"
 
 # folder with images or texts, at least > than 10 (*.jpgs) or txts with htmls as utf-8
-images = "/home/evgenii/Desktop/imagesforscan/"
+images = "/home/evgenii/Desktop/aug_all"
 # txts = "./textsdir"
 
 # or 
