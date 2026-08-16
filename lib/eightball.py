@@ -35,12 +35,6 @@ class EightBall:
 		self.salts = []
 		self.useend = useend
 
-		settings = {}
-		with open("./.ball", "rb") as f:
-			settings = json.loads(f.read())
-
-		self.answers = settings["answers"]
-
 		if salts_string != "":
 			self.setSalts(salts_string)
 			self.mode = "salted"
