@@ -165,3 +165,6 @@ class EightBall:
 			result = random.choice(rlist)
 		
 		return result
+
+	def get8ballAnswer(self):
+		 return random.choice(self.answers)

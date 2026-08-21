@@ -60,7 +60,7 @@ class ReMixer:
 				song = self.get_song(None)
 				# comment to use 
 
-				self.split_files_to_clip_length(song["duration"])
+				self.split_files_to_clip_length(song)
 				self.clear_small_files()
 				self.concatenate(finalfile)
 				self.make_song(finalfile, song["file"])
@@ -70,7 +70,7 @@ class ReMixer:
 				self.maketree(['cuts', 'prod', 'temp'])
 				song = self.get_song(self.thissong)
 
-				self.split_files_to_clip_length(song["duration"])
+				self.split_files_to_clip_length(song)
 				self.clear_small_files()
 				self.concatenate(finalfile)
 				self.make_song(finalfile, song["file"])
@@ -202,7 +202,10 @@ class ReMixer:
 			self.make_one_split(filesofvideos)
 			i = i + 1
 
-	def split_files_to_clip_length(self, duration):
+	def split_files_to_clip_length(self, song):
+		duration = song["duration"]
+		file = Path(song["file"]).name
+
 		filesofvideos = []
 
 		for folder in self.folders:
@@ -214,11 +217,7 @@ class ReMixer:
 
 		while clip_time < duration:
 			clip_time += self.make_one_split(filesofvideos)	
-			print("one split done:")
-			print(clip_time)		
-			print(duration)
-			print(":get new")
-
+			print(str(ceil(clip_time)/100) + " из " + str(ceil(duration)/100) + " " + file)
 	# choosing random algorithm
 	def local_random(self, arr):
 		if len(arr) > 0:			
@@ -315,7 +314,7 @@ class ReMixer:
 								output = ffmpeg.output(vid, filename)
 								output.run(quiet=True)
 
-								print("ffmpeg done")
+								# print("ffmpeg done (trimmed)")
 								
 								return time[0][1] - time[0][0]
 							except:
