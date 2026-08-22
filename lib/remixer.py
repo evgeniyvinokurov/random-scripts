@@ -217,7 +217,14 @@ class ReMixer:
 
 		while clip_time < duration:
 			clip_time += self.make_one_split(filesofvideos)	
-			print(str(ceil(clip_time)/100) + " из " + str(ceil(duration)/100) + " " + file)
+
+			cliptimestr = str(ceil(clip_time)/100)
+			dur = str(ceil(duration)/100)
+
+			text = f'\rСтатус: {cliptimestr} из {dur} выполнено для {file}'
+			print(text, end='', flush=True)
+			
+			
 	# choosing random algorithm
 	def local_random(self, arr):
 		if len(arr) > 0:			
