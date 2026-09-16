@@ -1,6 +1,10 @@
 import os
 import hashlib
 from textwrap import wrap
+import shutil
+import sys
+import os
+from PIL import Image, ImageDraw, ImageFont
 
 class RandomIO:	
     @staticmethod
@@ -78,3 +82,27 @@ class RandomIO:
     @staticmethod		
     def music(musicfolder):
         return RandomIO.files(musicfolder, [".mp3", ".MP3"])
+
+    @staticmethod
+    def pyllowDraw(text, font, dir):
+        width, height = 400, 200
+        image = Image.new("RGB", (width, height), color="white")
+
+        # Создаем объект для рисования
+        draw = ImageDraw.Draw(image)
+
+        # Вычисляем координаты для центрирования текста (современный метод getbbox)
+        bbox = font.getbbox(text)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+
+        x = (width - text_width) / 2
+        y = (height - text_height) / 2
+
+        # Рисуем текст черным цветом
+        draw.text((x, y), text, fill="black", font=font)
+
+        # Сохраняем результат в файл
+
+        image.save(dir + text + ".png")
+        print("Картинка успешно создана!")
