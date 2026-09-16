@@ -4,4 +4,6 @@ splits/*
 env/*
 textsdir/*
 retext*
+datesdir/*
+wordsdir/*
 .vs/*

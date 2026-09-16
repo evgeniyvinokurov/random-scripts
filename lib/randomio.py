@@ -43,7 +43,6 @@ class RandomIO:
                 pass
         return result
 
-
     @staticmethod
     def getTextBytesFromTextDir(folder):
         string_from_files = ""	
