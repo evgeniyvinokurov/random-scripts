@@ -31,9 +31,5 @@ except:
     pass
 
 
-font_path = './PTSerif-Bold.ttf'  
-font_size = 40
-font = ImageFont.truetype(font_path, font_size)
-        
 for texti in words:
-    RandomIO.pyllowDraw(texti, font, wordsdir)
+    RandomIO.pyllowDraw(texti, wordsdir)

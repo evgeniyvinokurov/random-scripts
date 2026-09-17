@@ -39,10 +39,6 @@ try:
 except:
     pass
 
-
-font_path = './PTSerif-Bold.ttf'  
-font_size = 40
-font = ImageFont.truetype(font_path, font_size)
-        
+       
 for texti in dates:
-    RandomIO.pyllowDraw(texti, font, datesdir)
+    RandomIO.pyllowDraw(texti, datesdir)

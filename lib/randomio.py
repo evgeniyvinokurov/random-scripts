@@ -4,6 +4,7 @@ from textwrap import wrap
 import shutil
 import sys
 import os
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 class RandomIO:	
@@ -84,12 +85,20 @@ class RandomIO:
         return RandomIO.files(musicfolder, [".mp3", ".MP3"])
 
     @staticmethod
-    def pyllowDraw(text, font, dir):
+    def pyllowDraw(text, dir):
         width, height = 400, 200
         image = Image.new("RGB", (width, height), color="white")
 
         # Создаем объект для рисования
         draw = ImageDraw.Draw(image)
+
+        # 1. Получаем абсолютный путь к папке lib, где лежит этот файл utils.py
+        LIB_DIR = Path(__file__).resolve().parent
+        
+        
+        font_path = str(LIB_DIR / "PTSerif-Bold.ttf")
+        font_size = 40
+        font = ImageFont.truetype(font_path, font_size)
 
         # Вычисляем координаты для центрирования текста (современный метод getbbox)
         bbox = font.getbbox(text)
