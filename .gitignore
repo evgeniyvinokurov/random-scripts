@@ -6,4 +6,5 @@ textsdir/*
 retext*
 datesdir/*
 wordsdir/*
+numbersdir/*
 .vs/*
