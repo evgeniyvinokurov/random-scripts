@@ -11,12 +11,16 @@ from predefined_vars import text_folders
 # folder = "./samples/"
 files = []
 
-for folderm in music_folders: 
-    mfiles = Musicle.music_files(folderm)
-    files.extend(mfiles)
+# for folderm in music_folders: 
+#     mfiles = Musicle.music_files(folderm)
+#     files.extend(mfiles)
+
+files = RandomIO.files("./test", [".png"])
+print(files)
 
 
 #salt_bytes = getTextBytesFromTextDir(folder)
+
 
 salt_bytes1 = ""
 

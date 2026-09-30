@@ -24,14 +24,14 @@ for word in imagesWords:
     print(word)
     print("------------------------------------------------")
 
-for date in imagesDates:
-    salt_bytes1 = RandomIO.getBytesFromImage(date)
-    e81 = EightBall(salt_bytes1)
-    song = e81.getOneBySalts(array)
+# for date in imagesDates:
+#     salt_bytes1 = RandomIO.getBytesFromImage(date)
+#     e81 = EightBall(salt_bytes1)
+#     song = e81.getOneBySalts(array)
    
-    print(song)
-    print(date)
-    print("------------------------------------------------")
+#     print(song)
+#     print(date)
+#     print("------------------------------------------------")
 
 
 #salt_bytes2 = getBytesFromImage(image2)

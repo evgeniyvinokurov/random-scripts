@@ -6,7 +6,7 @@ from predefined_vars import music_folders
 
 wordsFolder="./wordsdir"
 datesFolder="./datesdir"
-numbersFolder="./numbersdir"
+numbersFolder="./numbersDir"
 
 imagesDates = RandomIO.files(datesFolder, [".png"])
 imagesWords = RandomIO.files(wordsFolder, [".png"])

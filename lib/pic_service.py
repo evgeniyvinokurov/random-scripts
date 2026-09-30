@@ -21,16 +21,16 @@ class PicsService:
         # В Python randrange не включает верхнюю границу, как в вашей JS логике
         if min_val >= max_val:
             return min_val
-        return self.e81.randomFromRange(min_val, max_val - 1)
+        return self.e81.randomFromRange(min_val, max_val - 1, "salted")
 
     def get_random_array_value(self, array):
         return self.e81.getOneByEightBall(array)
 
     def get_from_warm_colors(self):
         """Генерирует случайный теплый цвет в формате RGB."""
-        r = self.e81.randomFromRange(180, 255)
-        g = self.e81.randomFromRange(100, 200)
-        b = self.e81.randomFromRange(0, 100)
+        r = self.e81.randomFromRange(180, 255, "salted")
+        g = self.e81.randomFromRange(100, 200, "salted")
+        b = self.e81.randomFromRange(0, 100, "salted")
         return (r, g, b)
     
     def draw_circle(self):

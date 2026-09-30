@@ -148,7 +148,7 @@ class EightBall:
 	
 	# random from range
 	
-	def randomFromRange(self, minv, maxv, mode = "salted"):
+	def randomFromRange(self, minv, maxv, mode):
 		result = None
 		rlist = []
 		

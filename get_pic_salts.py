@@ -5,7 +5,7 @@ from lib.pic_service import PicsService
 from predefined_vars import music_folders
 from predefined_vars import text_folders
 
-# image1 = "./samples_img/10.jpg"
+image1 = "/home/evgenii/Desktop/с мамой в городе/elka26"
 # image2 = "/home/evgenii/Desktop/music folder/"
 
 # folder = "./samples/"
@@ -17,10 +17,12 @@ files = []
 
 salt_bytes1 = ""
 
-for txtdir in text_folders:
-    salt_bytes1 += RandomIO.getTextBytesFromTextDir(txtdir)
+# for txtdir in text_folders:
+#     salt_bytes1 += RandomIO.getTextBytesFromTextDir(txtdir)
 
-# salt_bytes1 = RandomIO.getBytesFromImage(image1)
+salt_bytes1 = RandomIO.getBytesFromImages(image1)
+
+print(salt_bytes1)
 e81 = EightBall(salt_bytes1)
 # one = e81.getOneBySalts(files)
 ps = PicsService(e81)
