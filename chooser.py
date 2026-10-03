@@ -4,7 +4,7 @@ from lib.musicle import Musicle
 
 from predefined_vars import music_folders
 
-wordsFolder = "./world_things"
+wordsFolder = "./db"
 imagesWords = RandomIO.files(wordsFolder, [".png"])
 
 files = []
@@ -16,7 +16,7 @@ for word in files:
     e81 = EightBall(salt_bytes1)
     song = e81.getOneBySalts(imagesWords)
 
-    print(song)
     print(word)
+    print(song)
     print("------------------------------------------------")
     
