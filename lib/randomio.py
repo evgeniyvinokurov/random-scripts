@@ -34,6 +34,24 @@ class RandomIO:
                 except:
                     pass
         return result
+    
+    @staticmethod
+    def search_by_name(path, name) :
+        result = []
+        for file in os.listdir(path):
+            newpath = path + "/" + file
+            try:
+                if not os.path.isfile(newpath):	
+                    result.extend(RandomIO.search_by_name(newpath, name))
+            except:
+                pass
+            
+            try:
+                if os.path.isfile(newpath) and name in newpath:
+                    result.append(newpath)
+            except:
+                pass
+        return result
 
     @staticmethod
     def dirs(path):
@@ -112,6 +130,5 @@ class RandomIO:
         draw.text((x, y), text, fill="black", font=font)
 
         # Сохраняем результат в файл
-
+        
         image.save(dir + text + ".png")
-        print("Картинка успешно создана!")
