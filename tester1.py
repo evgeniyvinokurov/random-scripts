@@ -6,20 +6,18 @@ from lib.eightball import EightBall
 class Tester:
     @staticmethod
     def to_check(word, cat, db):
-        wordsFolder = db
-        testFolder = "./test/"
-        
-        imagesWords = RandomIO.files(wordsFolder, [".png"]) 
+        testFolder = "./test/"        
+
         res = RandomIO.search_by_name(testFolder, word)
 
         if len(res) > 0:            
             salt_bytes1 = RandomIO.getBytesFromImage(res[0])
             e81 = EightBall(salt_bytes1)
-            choosen = e81.getOneBySalts(imagesWords)
+            choosen = e81.getOneBySalts(db)
         else:
             RandomIO.pyllowDraw(word, testFolder)
             choosen = testFolder + word + ".png"
-        
+
         if cat in choosen:
             return True
 
@@ -27,15 +25,14 @@ class Tester:
     
     @staticmethod
     def test_current_base(): 
-        dbs = [
-            "./db/db1",
-            "./db/db2",
-            "./db/db3",
-            "./db/db4",
-            "./db/db5",
-        ]
 
-        for db in dbs:
+        byets = RandomIO.getBytesFromImages("./db/")
+        e82 = EightBall(byets)
+        i = 0
+
+        while True:
+            db = e82.randomRead("./db/")
+
             tests = ""
 
             tests += "+" if Tester.to_check("ворон", "птицы", db)  else "-"
@@ -46,8 +43,13 @@ class Tester:
             tests += "+" if Tester.to_check("оса", "животные", db)  else "-"
             tests += "+" if Tester.to_check("шакал", "животные", db)  else "-"
             tests += "+" if Tester.to_check("обезьяна", "животные", db)  else "-"
-
+            
             print(tests)
+            i = i + 1
+
+            if i>20:
+                break
+
 
         
 Tester.test_current_base()

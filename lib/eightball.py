@@ -1,6 +1,7 @@
 from math import ceil
 import random
 import json
+import os
 
 
 class EightBall: 	
@@ -164,6 +165,36 @@ class EightBall:
 		else:
 			result = random.choice(rlist)
 		
+		return result
+
+	def randomRead(self, dir, exts = [".png"]):
+		result = []
+		categories = []
+		
+		for file in os.listdir(dir):
+			newpath = dir + "/" + file
+			try:
+				if not os.path.isfile(newpath):	
+					categories.append(newpath)					
+			except:
+				pass
+
+			for ext in exts:
+				try:
+					if os.path.isfile(newpath) and newpath.endswith(ext):
+						result.append(newpath)
+				except:
+					pass
+				
+		while True:
+			if len(categories) == 0:
+				break
+
+			random_cat = self.getOneByEightBall(categories)
+			result.extend(self.randomRead(random_cat, exts))
+			categories.remove(random_cat)
+
+				
 		return result
 
 	def get8ballAnswer(self):

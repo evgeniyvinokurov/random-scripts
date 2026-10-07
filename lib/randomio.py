@@ -34,7 +34,7 @@ class RandomIO:
                 except:
                     pass
         return result
-    
+
     @staticmethod
     def search_by_name(path, name) :
         result = []
@@ -88,7 +88,7 @@ class RandomIO:
     
     @staticmethod
     def getBytesFromImages(folder):	
-        images = RandomIO.files(folder, [".jpg"])
+        images = RandomIO.files(folder, [".jpg", ".png"])
         string_bytes = ""
         
         for i in images:
