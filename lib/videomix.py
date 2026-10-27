@@ -1,24 +1,47 @@
+import ffmpeg
 import subprocess
 
 
 class VideoMix:
-	def __init__(self, options):
-		self.options = options
+	def __init__(self):		
 		pass
 
-	# options
-	# - file
-	# - startTime
-	# - endTime
-	# - resultFile
+	def cut_video_segment(self, file, start, end, fileOut):
+		try:
+			# Создаем ОДИН входной поток
+			inp = ffmpeg.input(file)
+			
+			# Обрезаем видео
+			vid = inp.trim(start=start, end=end).setpts('PTS-STARTPTS')
+			
+			# Обрезаем аудио (берем поток из того же входа)
+			# Используем a:0 (первый аудиопоток), чтобы явно указать, что берем
+			audio = inp.audio.filter('atrim', start=start, end=end).filter('asetpts', 'PTS-STARTPTS')
+			
+			# Собираем выход. Убираем 'copy', указываем кодеки.
+			# libx264 - стандартный кодек для mp4, aac - для звука.
+			out = ffmpeg.output(
+				vid, 
+				audio, 
+				fileOut, 
+				vcodec='libx264', 
+				acodec='aac',
+				# Сбрасываем метаданные
+				map_metadata='-1', 
+				map_chapters='-1',
+				# Чтобы видео сразу проигрывалось в браузере
+				movflags='faststart' 
+			)
+			
+			out.run(quiet=True)
+			return True
 
-	# def split_one_video_file(self, options):
-	# 	vid = ffmpeg.input(options["file"])
-	# 	vid = vid.trim(start = options["startTime"], end = options["endTime"]).setpts('PTS-STARTPTS')
-	# 	output = ffmpeg.output(vid, options["resultFile"])
-	# 	output.run(quiet=True)
+		except ffmpeg.Error as e:
+			print(f"FFmpeg не смог обработать файл '{file}' (от {start} до {end})")
+			print(e.stderr.decode('utf-8', 'ignore'))
+			return False
 
-	def probeFile(self, options): 
+	def probeFile(self, fileIn): 
 		try: 
 			subprocess.run( 
 				[
@@ -26,7 +49,7 @@ class VideoMix:
 				 	"-v", 
 					"error", 
 					"-i", 
-					options["fileIn"]
+					fileIn
 				], 
 				check=True, 
 				capture_output=True 
@@ -35,14 +58,14 @@ class VideoMix:
 		except	subprocess.CalledProcessError: 
 			return False
 
-	def make_ts_file(self, options):
+	def make_ts_file(self, fileIn, fileOut):
 		command = [
 			"ffmpeg",
-			"-i", options["fileIn"],
+			"-i", fileIn,
 			"-c", "copy",
 			"-bsf:v", "h264_mp4toannexb",
 			"-f", "mpegts",
-			options["fileOut"]
+			fileOut
 		]
 
 		try:
@@ -55,14 +78,14 @@ class VideoMix:
 		except FileNotFoundError:
 			print("Ошибка: ffmpeg не установлен или не найден в PATH")
 	
-	def concatenate_video_files(self, options):
+	def concatenate_video_files(self, filesIn, fileOut):
 
 		# file_temp_ts — список путей к .ts файлам
 		# finalfile — путь к итоговому .mp4 файлу
 
 		# Перемешиваем список
 		# file_temp_ts = self.local_shuffle(options["filesIn"])
-		file_temp_ts = options["filesIn"]
+		file_temp_ts = filesIn
 
 		# Формируем список аргументов для FFmpeg
 		# Важно: FFmpeg требует, чтобы все файлы имели одинаковый формат и кодеки для concat
@@ -72,7 +95,7 @@ class VideoMix:
 			"-i", "concat:" + "|".join(file_temp_ts), # Собираем строку пайплайна только для аргумента -i
 			"-c", "copy",
 			"-bsf:a", "aac_adtstoasc",
-			options["fileOut"]
+			fileOut
 		]
 
 		print("Выполняется команда:", " ".join(command))
@@ -80,15 +103,43 @@ class VideoMix:
 		try:
 			# check=True выбросит исключение, если ffmpeg вернет ошибку
 			subprocess.run(command, check=True)
-			print(f"Файл успешно создан: {options['fileOut']}")
+			print(f"Файл успешно создан: {fileOut}")
 		except subprocess.CalledProcessError as e:
 			print(f"Ошибка FFmpeg (код {e.returncode}). См. логи выше.")
 		except FileNotFoundError:
 			print("Ошибка: FFmpeg не установлен или не найден в PATH.")
 
-		
+	def get_video_duration(self, fileIn):
+		try:
+			# Запускаем ffprobe и захватываем вывод
+			result = subprocess.run(
+				[
+					"ffprobe",
+					"-v", "error",
+					"-show_entries", "format=duration",
+					"-of", "default=noprint_wrappers=1:nokey=1",
+					fileIn
+				],
+				capture_output=True, 
+				text=True, 
+				check=True
+			)
+			
+			# Вывод приходит в виде строки, преобразуем в число
+			duration = float(result.stdout.strip())
+			return duration
+			
+		except (subprocess.CalledProcessError, ValueError):
+			return None
+
 	# def concatenate_video_files(self, options):
 	# 	try:
+	# 		for f in options["filesIn"]:
+	# 			optionsIn = {
+	# 				"fileIn": f,
+	# 				"fileOut": options["fileOut"]
+	# 			}
+	# 			self.make_ts_file(optionsIn)
 	# 		st = "ffmpeg -i \"concat:"
 	# 		alltemp_vids = glob.glob(options["folder"] + "/*.mp4")
 	# 		file_temp_ts = []
