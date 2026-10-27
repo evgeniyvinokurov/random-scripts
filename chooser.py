@@ -4,11 +4,11 @@ from lib.musicle import Musicle
 
 from predefined_vars import music_folders
 
-wordsFolder = "./db"
-imagesWords = RandomIO.files(wordsFolder, [".png"])
+wordsFolder = "/home/evgenii/Desktop/bestplaylist"
+imagesWords = RandomIO.files(wordsFolder, [".mp3", ".mid"])
 
 files = []
-files = RandomIO.files("./test", [".png"])
+files = RandomIO.files("./test", [".png", ".jpg"])
 print(files)
 
 for word in files:

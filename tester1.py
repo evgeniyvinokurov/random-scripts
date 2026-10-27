@@ -47,7 +47,7 @@ class Tester:
             print(tests)
             i = i + 1
 
-            if i>20:
+            if i>200:
                 break
 
 

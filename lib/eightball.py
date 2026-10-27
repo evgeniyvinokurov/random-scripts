@@ -40,7 +40,9 @@ class EightBall:
 			self.setSalts(salts_string)
 			self.mode = "salted"
 		
-		
+	def generator(self, ar):
+		yield self.random(ar)
+
 	def random(self, ar):
 		result = None
 		

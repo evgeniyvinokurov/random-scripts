@@ -10,3 +10,5 @@ numbersdir/*
 .vs/*
 trash/*
 db/*
+test/*
+testFiles/*
