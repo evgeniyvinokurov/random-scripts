@@ -1,12 +1,13 @@
 import ffmpeg
 import subprocess
 
+import os
+from moviepy import VideoFileClip
 
-class VideoMix:
-	def __init__(self):		
-		pass
+class VideoCutsAndJoin:
 
-	def cut_video_segment(self, file, start, end, fileOut):
+	@staticmethod
+	def cut_video_segment(file, start, end, fileOut):
 		try:
 			# Создаем ОДИН входной поток
 			inp = ffmpeg.input(file)
@@ -41,12 +42,14 @@ class VideoMix:
 			print(e.stderr.decode('utf-8', 'ignore'))
 			return False
 
-	def probeFile(self, fileIn): 
+
+	@staticmethod
+	def probe_file(fileIn): 
 		try: 
 			subprocess.run( 
 				[
 					"ffprobe", 
-				 	"-v", 
+					"-v", 
 					"error", 
 					"-i", 
 					fileIn
@@ -58,7 +61,9 @@ class VideoMix:
 		except	subprocess.CalledProcessError: 
 			return False
 
-	def make_ts_file(self, fileIn, fileOut):
+
+	@staticmethod
+	def make_ts_file(fileIn, fileOut):
 		command = [
 			"ffmpeg",
 			"-i", fileIn,
@@ -77,8 +82,10 @@ class VideoMix:
 			print(f"Ошибка ffmpeg: Код возврата {e.returncode}")
 		except FileNotFoundError:
 			print("Ошибка: ffmpeg не установлен или не найден в PATH")
-	
-	def concatenate_video_files(self, filesIn, fileOut):
+
+
+	@staticmethod
+	def concatenate_video_files(filesIn, fileOut):
 
 		# file_temp_ts — список путей к .ts файлам
 		# finalfile — путь к итоговому .mp4 файлу
@@ -109,7 +116,9 @@ class VideoMix:
 		except FileNotFoundError:
 			print("Ошибка: FFmpeg не установлен или не найден в PATH.")
 
-	def get_video_duration(self, fileIn):
+
+	@staticmethod
+	def get_video_duration(fileIn):
 		try:
 			# Запускаем ffprobe и захватываем вывод
 			result = subprocess.run(
@@ -131,6 +140,88 @@ class VideoMix:
 			
 		except (subprocess.CalledProcessError, ValueError):
 			return None
+
+
+	@staticmethod
+	def append_audio_to_video(fileIn, audio, fileOut):
+		# Проверяем существование исходного видео
+		if not os.path.exists(fileIn):
+			print(f"ERROR: Video file not found: {fileIn}")
+			return
+		
+		if not audio:
+			print("ERROR: Could not find a valid music file after several attempts.")
+			return
+
+		print(f"Selected: {audio}")
+
+		try:
+			# Получаем длительность видео через MoviePy (надежнее, чем парсинг ffprobe)
+			with VideoFileClip(fileIn) as clip:
+				duration = clip.duration
+
+			# Строим граф FFmpeg без промежуточных файлов на диске
+			video_input = ffmpeg.input(fileIn)
+			audio_input = ffmpeg.input(audio)
+
+			# Обрезаем аудио до длины видео, нормализуем громкость и накладываем эффект затухания (fadeout)
+			# Длительность fadeout должна быть чуть меньше видео, чтобы он успел завершиться
+			processed_audio = audio_input.audio.filter('atrim', duration=duration).filter('loudnorm').filter('afade', t='out', st=duration - 2, d=2)
+		
+			# Склеиваем. 
+			# v=1, a=1 указывают, что берем 1 видеопоток и 1 аудиопоток.
+			# map не нужен, concat сам определит потоки, но можно задать явно для надежности.
+			final = ffmpeg.concat(video_input, processed_audio, v=1, a=1)
+			
+			final.output( fileOut, vcodec='libx264', acodec='aac', pix_fmt='yuv420p'  ).overwrite_output().run(quiet=True)
+
+			print(f"Audio added successfully: {fileOut}")
+
+		except ffmpeg.Error as e:
+			print("FFMPEG ERROR:")
+			print(e.stderr.decode() if e.stderr else "Unknown error")
+		except Exception as e:
+			print(f"General ERROR: {str(e)}")
+
+
+
+
+# Важное замечание по кодированию:
+# В примере выше используется c='copy' для ускорения, если исходное видео уже в H.264.
+# Если кодеки видео и аудио меняются, или concat выдает ошибку "Non-monotonous DTS", 
+# потребуется полное перекодирование (убрать c='copy' и задать кодеки явно, как в acodec='aac').
+# Также для идеальной склейки без рассинхрона может потребоваться фильтр 'asetpts=PTS-STARTPTS' после atrim.
+# 	def add_audio(self, finalfile) :
+# 		with VideoFileClip(finalfile) as clip:
+# 			filesofmusic = []
+
+# 			for folder in self.mfolders:
+# 				filesofmusic.extend(Musicle.music_files(folder))
+
+# 			print(str(len(filesofmusic)) + " music files found")
+			
+# 			try:
+# 				while True:
+# 					file = self.local_random(filesofmusic)
+# 					if Musicle.checkfile_nocopy(file):
+# 						break
+					
+# 				print(file)
+# 				tempfile = "./splits/prod/sound.wav"
+# 				audio_input = ffmpeg.input(file)
+# 				audio_cut = audio_input.audio.filter('atrim', duration=clip.duration)
+# 				audio_output = ffmpeg.output(audio_cut, tempfile)
+# 				ffmpeg.run(audio_output, quiet=True)
+# 				print("audio trimmed")
+
+# 				video = ffmpeg.input(finalfile)
+# 				audio = ffmpeg.input(tempfile)
+# 				audiobasename = Usefull.remove_spaces(os.path.basename(file))
+# 				ffmpeg.concat(video, audio, v=1, a=1).output('./splits/final_' + datetime.now().strftime("%d.%m.%Y_%H:%M:%S") + audiobasename + '.mp4').run(quiet=True)
+# 				print("audio added")
+# 			except:
+# 				print("ERROR AUDIO")
+# 				pass
 
 	# def concatenate_video_files(self, options):
 	# 	try:
