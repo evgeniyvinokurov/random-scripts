@@ -143,7 +143,41 @@ class VideoCutsAndJoin:
 
 
 	@staticmethod
-	def append_audio_to_video(fileIn, audio, fileOut):
+	def append_audio_to_video(fileIn, audio, tempFolder, fileOut):
+
+		# 	def add_audio(self, finalfile) :
+		# with VideoFileClip(finalfile) as clip:
+		# 	filesofmusic = []
+
+		# 	for folder in self.mfolders:
+		# 		filesofmusic.extend(Musicle.music_files(folder))
+
+		# 	print(str(len(filesofmusic)) + " music files found")
+			
+		# 	try:
+		# 		while True:
+		# 			file = self.local_random(filesofmusic)
+		# 			if Musicle.checkfile_nocopy(file):
+		# 				break
+					
+		# 		print(file)
+		# 		tempfile = "./splits/prod/sound.wav"
+		# 		audio_input = ffmpeg.input(file)
+		# 		audio_cut = audio_input.audio.filter('atrim', duration=clip.duration)
+		# 		audio_output = ffmpeg.output(audio_cut, tempfile)
+		# 		ffmpeg.run(audio_output, quiet=True)
+		# 		print("audio trimmed")
+
+		# 		video = ffmpeg.input(finalfile)
+		# 		audio = ffmpeg.input(tempfile)
+		# 		audiobasename = Usefull.remove_spaces(os.path.basename(file))
+		# 		ffmpeg.concat(video, audio, v=1, a=1).output('./splits/final_' + datetime.now().strftime("%d.%m.%Y_%H:%M:%S") + audiobasename + '.mp4').run(quiet=True)
+		# 		print("audio added")
+		# 	except:
+		# 		print("ERROR AUDIO")
+		# 		pass
+
+
 		# Проверяем существование исходного видео
 		if not os.path.exists(fileIn):
 			print(f"ERROR: Video file not found: {fileIn}")
@@ -155,27 +189,21 @@ class VideoCutsAndJoin:
 
 		print(f"Selected: {audio}")
 
-		try:
-			# Получаем длительность видео через MoviePy (надежнее, чем парсинг ffprobe)
+		try:			
 			with VideoFileClip(fileIn) as clip:
-				duration = clip.duration
+				tempfile = tempFolder + "/final_sound.wav"
+				audio_input = ffmpeg.input(audio)
+				audio_cut = audio_input.audio.filter('atrim', duration=clip.duration)
+				audio_output = ffmpeg.output(audio_cut, tempfile)
+				ffmpeg.run(audio_output, quiet=True)
+				print("audio trimmed")
 
-			# Строим граф FFmpeg без промежуточных файлов на диске
-			video_input = ffmpeg.input(fileIn)
-			audio_input = ffmpeg.input(audio)
+				video = ffmpeg.input(fileIn)
+				audio = ffmpeg.input(tempfile)
 
-			# Обрезаем аудио до длины видео, нормализуем громкость и накладываем эффект затухания (fadeout)
-			# Длительность fadeout должна быть чуть меньше видео, чтобы он успел завершиться
-			processed_audio = audio_input.audio.filter('atrim', duration=duration).filter('loudnorm').filter('afade', t='out', st=duration - 2, d=2)
-		
-			# Склеиваем. 
-			# v=1, a=1 указывают, что берем 1 видеопоток и 1 аудиопоток.
-			# map не нужен, concat сам определит потоки, но можно задать явно для надежности.
-			final = ffmpeg.concat(video_input, processed_audio, v=1, a=1)
-			
-			final.output( fileOut, vcodec='libx264', acodec='aac', pix_fmt='yuv420p'  ).overwrite_output().run(quiet=True)
-
-			print(f"Audio added successfully: {fileOut}")
+				ffmpeg.concat(video, audio, v=1, a=1).output(fileOut).run(quiet=True)
+				print("audio added")
+				print(f"Audio added successfully: {fileOut}")
 
 		except ffmpeg.Error as e:
 			print("FFMPEG ERROR:")

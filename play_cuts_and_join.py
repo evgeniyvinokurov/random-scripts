@@ -84,6 +84,6 @@ fileOutWidthAudio = folderOutput + str(name) + "_a_final.mp4"
 makeTsFilesOneClip(fileOut)
 
 fileIn = fileOut
-VideoCutsAndJoin.append_audio_to_video(fileIn, song, fileOutWidthAudio)
+VideoCutsAndJoin.append_audio_to_video(fileIn, song, folderOutput, fileOutWidthAudio)
 
 print("ok")
