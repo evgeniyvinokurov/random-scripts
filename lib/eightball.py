@@ -151,7 +151,7 @@ class EightBall:
 	
 	# random from range
 	
-	def randomFromRange(self, minv, maxv, mode):
+	def randomFromRange(self, minv, maxv, mode = "notlisted"):
 		result = None
 		rlist = []
 		
