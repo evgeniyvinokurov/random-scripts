@@ -7,7 +7,7 @@ from moviepy import VideoFileClip
 class VideoCutsAndJoin:
 
 	@staticmethod
-	def cut_video_segment(file, start, end, fileOut):
+	async def make_ts_cuts(file, start, end, fileOut, fileOutTs):
 		try:
 			# Создаем ОДИН входной поток
 			inp = ffmpeg.input(file)
@@ -35,13 +35,30 @@ class VideoCutsAndJoin:
 			)
 			
 			out.run(quiet=True)
-			return True
 
 		except ffmpeg.Error as e:
 			print(f"FFmpeg не смог обработать файл '{file}' (от {start} до {end})")
 			print(e.stderr.decode('utf-8', 'ignore'))
 			return False
 
+		command = [
+			"ffmpeg",
+			"-i", fileOut,
+			"-c", "copy",
+			"-bsf:v", "h264_mp4toannexb",
+			"-f", "mpegts",
+			fileOutTs
+		]
+
+		try:
+			# check=True заставит Python выбросить исключение CalledProcessError, 
+			# если ffmpeg завершится с ошибкой (ненулевой код возврата)
+			await subprocess.run(command, check=True)
+			print("Конвертация успешно завершена")
+		except subprocess.CalledProcessError as e:
+			print(f"Ошибка ffmpeg: Код возврата {e.returncode}")
+		except FileNotFoundError:
+			print("Ошибка: ffmpeg не установлен или не найден в PATH")
 
 	@staticmethod
 	def probe_file(fileIn): 
@@ -60,29 +77,6 @@ class VideoCutsAndJoin:
 			return True 
 		except	subprocess.CalledProcessError: 
 			return False
-
-
-	@staticmethod
-	def make_ts_file(fileIn, fileOut):
-		command = [
-			"ffmpeg",
-			"-i", fileIn,
-			"-c", "copy",
-			"-bsf:v", "h264_mp4toannexb",
-			"-f", "mpegts",
-			fileOut
-		]
-
-		try:
-			# check=True заставит Python выбросить исключение CalledProcessError, 
-			# если ffmpeg завершится с ошибкой (ненулевой код возврата)
-			subprocess.run(command, check=True)
-			print("Конвертация успешно завершена")
-		except subprocess.CalledProcessError as e:
-			print(f"Ошибка ffmpeg: Код возврата {e.returncode}")
-		except FileNotFoundError:
-			print("Ошибка: ffmpeg не установлен или не найден в PATH")
-
 
 	@staticmethod
 	def concatenate_video_files(filesIn, fileOut):
