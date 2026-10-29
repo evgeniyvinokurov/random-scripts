@@ -54,7 +54,7 @@ class TestVideoMix:
         audio = "./testFiles/Nirvana_-_Do_You_Love_Me.mp3"
         fileOut = "./testFiles/addedMusicClip.mp4"
 
-        VideoCutsAndJoin.append_audio_to_video(fileIn="./testFiles/probeTest.mp4", audio=audio, fileOut=fileOut)
+        VideoCutsAndJoin.append_audio_to_video(fileIn="./testFiles/probeTest.mp4", tempFolder="./testFiles/", audio=audio, fileOut=fileOut)
         res = VideoCutsAndJoin.probe_file(fileIn=fileOut)  
                 
         assert res != False
