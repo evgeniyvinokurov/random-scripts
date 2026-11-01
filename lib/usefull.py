@@ -11,7 +11,7 @@ from pathlib import Path
 from lib.randomio import RandomIO
 
 import ffmpeg
-from moviepy.editor import VideoFileClip
+from moviepy import VideoFileClip
 
 from html.parser import HTMLParser
 from datetime import date

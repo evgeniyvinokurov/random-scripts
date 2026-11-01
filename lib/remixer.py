@@ -12,7 +12,7 @@ from math import ceil
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from moviepy.editor import VideoFileClip
+from moviepy import VideoFileClip
 
 from .eightball import EightBall
 from .musicle import Musicle
@@ -215,14 +215,7 @@ class ReMixer:
 		clip_time = 0
 
 		while clip_time < duration:
-			clip_time += self.make_one_split(filesofvideos)	
-
-			cliptimestr = str(ceil(clip_time)/100)
-			dur = str(ceil(duration)/100)
-
-			text = f'\rСтатус: {cliptimestr} из {dur} выполнено для {file}'
-			print(text, end='', flush=True)
-			
+			clip_time += self.make_one_split(filesofvideos)				
 			
 	# choosing random algorithm
 	def local_random(self, arr):
@@ -315,13 +308,38 @@ class ReMixer:
 
 								# print(filename)
 
-								vid = ffmpeg.input(file)
-								vid = vid.trim(start = time[0][0], end = time[0][1]).setpts('PTS-STARTPTS')
-								output = ffmpeg.output(vid, filename)
-								output.run(quiet=True)
+								# vid = ffmpeg.input(file)
+								# vid = vid.trim(start = time[0][0], end = time[0][1]).setpts('PTS-STARTPTS')
+								# output = ffmpeg.output(vid, filename)
+								# output.run()
+
+								# Создаем ОДИН входной поток
+								inp = ffmpeg.input(file)
+								
+								# Обрезаем видео
+								vid = inp.trim(start=time[0][0], end=time[0][1]).setpts('PTS-STARTPTS')
+								
+								# Обрезаем аудио (берем поток из того же входа)
+								# Используем a:0 (первый аудиопоток), чтобы явно указать, что берем
+								audio = inp.audio.filter('atrim', start=time[0][0], end=time[0][1]).filter('asetpts', 'PTS-STARTPTS')
+								
+								# Собираем выход. Убираем 'copy', указываем кодеки.
+								# libx264 - стандартный кодек для mp4, aac - для звука.
+								out = ffmpeg.output(
+									vid, 
+									audio, 
+									filename, 
+									vcodec='libx264', 
+									acodec='aac',
+									# Сбрасываем метаданные
+									map_metadata='-1', 
+									map_chapters='-1',
+									# Чтобы видео сразу проигрывалось в браузере
+									movflags='faststart' 
+								)
+								out.run()
 
 								# print("ffmpeg done (trimmed)")
-								
 								return time[0][1] - time[0][0]
 							except:
 								print("ERROR FFMPEG FILE")
@@ -356,13 +374,13 @@ class ReMixer:
 				audio_input = ffmpeg.input(file)
 				audio_cut = audio_input.audio.filter('atrim', duration=clip.duration)
 				audio_output = ffmpeg.output(audio_cut, tempfile)
-				ffmpeg.run(audio_output, quiet=True)
+				ffmpeg.run(audio_output)
 				print("audio trimmed")
 
 				video = ffmpeg.input(finalfile)
 				audio = ffmpeg.input(tempfile)
 				audiobasename = Usefull.remove_spaces(os.path.basename(file))
-				ffmpeg.concat(video, audio, v=1, a=1).output('./splits/final_' + datetime.now().strftime("%d.%m.%Y_%H:%M:%S") + audiobasename + '.mp4').run(quiet=True)
+				ffmpeg.concat(video, audio, v=1, a=1).output('./splits/final_' + datetime.now().strftime("%d.%m.%Y_%H:%M:%S") + audiobasename + '.mp4').run()
 				print("audio added")
 			except:
 				print("ERROR AUDIO")

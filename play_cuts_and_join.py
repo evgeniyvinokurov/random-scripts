@@ -53,14 +53,19 @@ async def main():
 
             
     song = e81.random(filesofmusic)
-    time = 30
+    time = 60
     duration = 0
     count = 0
 
     funcs = []
 
     while duration < time:
-        video = e81.random(filesofvideos)
+        mode = "hor"
+
+        video = "empty"
+        while not (mode in video):
+            video = e81.random(filesofvideos)
+        
         duration_file = VideoCutsAndJoin.get_video_duration(video)
         if isinstance(duration_file,(int, float)):        
             start = e81.randomFromRange(0, duration_file)
