@@ -5,6 +5,7 @@ function createEightBall(saltsString = "", useEnd = false) {
     let mode = "free";
     let theend = false;
     let useend = useEnd;
+    let allSaltsStr = saltsString;
 
     const answers = [
         {"text": "● It is certain.", "val": 1},
@@ -37,6 +38,21 @@ function createEightBall(saltsString = "", useEnd = false) {
         }
         return Math.ceil(sums % length);
     }
+
+    function getOnlyOneByOneSalt(ar) {
+        let sums = 0;
+
+        if (salts.length == 0)
+            return false;
+
+        for (let j = 0; j < allSaltsStr.length; j++) {
+            sums += allSaltsStr.charCodeAt(j);
+        }        
+
+        let num = Math.ceil(sums % ar.length);
+        return ar[num];
+    }
+
 
     function getOne(ar, salt, justnum = false) {
         const length = ar.length;
@@ -130,6 +146,7 @@ function createEightBall(saltsString = "", useEnd = false) {
     }
 
     function setSalts(saltsStr) {
+        saltsString = saltsStr
         const saltssplitted = saltsStr.split(" ");
         salts = [];
         for (const salt of saltssplitted) {
@@ -164,6 +181,7 @@ function createEightBall(saltsString = "", useEnd = false) {
         answerText,
         getOneRandomByEightBall,
         getOneBySalts,
+        getOnlyOneByOneSalt,
         setSalts
     };
 }
@@ -176,18 +194,36 @@ function createEightBall(saltsString = "", useEnd = false) {
 getbookwithsalt = function(salt = "") {
     let israndom = salt === "";
     let shelves = [
-        { name: "first", books: 10},
-        { name: "second", books: 12},
-        { name: "third", books: 11},
-        { name: "fourth", books: 12},
-        { name: "fourth", books: 9}
+        { name: "first", books: 6},
+        { name: "second", books: 7},
+        { name: "third", books: 4},
+        { name: "fourth", books: 4},
+        { name: "fifth", books: 5},
+        { name: "sixth", books: 9},
+        { name: "seventh", books: 6},
+        { name: "eighth", books: 6},
+        { name: "ninth", books: 4},
+        { name: "tenth", books: 7}
     ];
+
+    let allBooks = function(shelves) {
+        let all_books = [];
+        for (shelve of shelves) {
+            for (let i = 1; i <= shelve.books; i++){
+                all_books.push({"code": shelve.name + " " + i})
+            }
+        }
+
+        return all_books;
+    }
+
     if (!israndom) {
         e8 = createEightBall(salt);
 
-        shelve = e8.getOneBySalts(shelves);
-        book = e8.getOneBySalts(Array.from(Array(shelve.books).keys())) + 1;
-        paragraph = e8.getOneBySalts(Array.from(Array(10).keys())) + 1;
+        books = allBooks(shelves)
+        book = e8.getOnlyOneByOneSalt(books);
+
+        return book;
     } else {
 
         e8 = createEightBall();
@@ -195,8 +231,9 @@ getbookwithsalt = function(salt = "") {
         shelve = e8.random(shelves);
         book = e8.random(Array.from(Array(shelve.books).keys())) + 1;
         paragraph = e8.random(Array.from(Array(10).keys())) + 1;
+
+        return "shelve:" + shelve.name + "; book:" + book + "; paragraph: " + paragraph;
     }
 
-    return "shelve:" + shelve.name + "; book:" + book + "; paragraph: " + paragraph;
 }
 
