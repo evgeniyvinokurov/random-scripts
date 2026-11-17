@@ -206,24 +206,14 @@ getbookwithsalt = function(salt = "") {
         { name: "tenth", books: 7}
     ];
 
-    let allBooks = function(shelves) {
-        let all_books = [];
-        for (shelve of shelves) {
-            for (let i = 1; i <= shelve.books; i++){
-                all_books.push({"code": shelve.name + " " + i})
-            }
-        }
-
-        return all_books;
-    }
-
     if (!israndom) {
         e8 = createEightBall(salt);
+        
+        shelve = e8.getOneByEightBall(shelves);
+        book = e8.getOneByEightBall(Array.from(Array(shelve.books).keys())) + 1;
+        paragraph = e8.getOneByEightBall(Array.from(Array(10).keys())) + 1;
 
-        books = allBooks(shelves)
-        book = e8.getOnlyOneByOneSalt(books);
-
-        return book;
+        return "shelve:" + shelve.name + "; book:" + book + "; paragraph: " + paragraph;
     } else {
 
         e8 = createEightBall();
